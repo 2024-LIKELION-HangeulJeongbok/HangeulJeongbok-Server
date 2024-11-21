@@ -17,5 +17,3 @@
 | `!HOTFIX`         | 급하게 치명적인 버그를 고쳐야 하는 경우                   |
 
 <br>
-
-<img width="1386" src="https://github.com/user-attachments/assets/67452330-f2fe-4433-ac9e-1adf4ed91837"
