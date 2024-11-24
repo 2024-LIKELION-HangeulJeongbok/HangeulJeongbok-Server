@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
     #앱
     'users',
+    'quiz',
 ]
 
 MIDDLEWARE = [
