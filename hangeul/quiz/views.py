@@ -23,12 +23,24 @@ class QuizListAPIView(APIView):
             quiz_ids = list(Quiz.objects.values_list('id', flat=True))
             request.session['quiz_ids'] = quiz_ids
             request.session['current_quiz_index'] = 0
-            request.session['score'] = 0
-            request.session['wrong_answers'] = []
+            request.session['score'] = 0 # 총 점수 초기화
+            request.session['wrong_answers'] = [] # 틀린 문제 ID
 
         # 퀴즈가 끝났다면 결과 페이지로 안내
         if current_index >= len(quiz_ids):
-            return Response({"message": "All quizzes completed. Proceed to results."}, status=status.HTTP_200_OK)
+            total_questions = len(quiz_ids)
+            final_score = request.session.get('score', 0)
+            wrong_answers = request.session.get('wrong_answers', [])
+            wrong_quizzes = Quiz.objects.filter(id__in=wrong_answers)
+
+            # 틀린 문제를 반환
+            wrong_serializer = QuizSerializer(wrong_quizzes, many=True)
+            return Response({
+                "message": "Quiz completed.",
+                "final_score": final_score,
+                "total_score": 100,  # 100점 만점
+                "wrong_answers": wrong_serializer.data
+            }, status=status.HTTP_200_OK)
 
         # 현재 문제 반환
         quiz = Quiz.objects.get(id=quiz_ids[current_index])
@@ -52,7 +64,23 @@ class QuizListAPIView(APIView):
 
             # 다음 문제로 이동
             request.session['current_quiz_index'] += 1
-            return Response({'result': result}, status=status.HTTP_200_OK)
+            next_index = request.session['current_quiz_index']
+
+            # 퀴즈 끝 여부 확인
+            if next_index >= len(quiz_ids):
+                return Response({
+                    'result': result,
+                    'message': "All quizzes completed. Proceed to results."
+                }, status=status.HTTP_200_OK)
+
+            # 다음 문제 데이터 가져오기
+            next_quiz = Quiz.objects.get(id=quiz_ids[next_index])
+            next_quiz_serializer = QuizSerializer(next_quiz)
+
+            return Response({
+                'result': result,
+                'next_quiz': next_quiz_serializer.data
+            }, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
