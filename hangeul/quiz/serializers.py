@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Quiz
 
+# GET 호출할때 위와 어떤 형식으로 나타낼지 지정
 class QuizSerializer(serializers.ModelSerializer):
     class Meta:
         model = Quiz
@@ -29,8 +30,8 @@ class AnswerSerializer(serializers.Serializer):
         except Quiz.DoesNotExist:
             raise serializers.ValidationError("Quiz not found.")
 
-        # 선택지값이 선택지 총문항보다 많거나 1보다 작지 말아야함.
-        if data['selected_option'] < 0 or data['selected_option'] >= len(quiz.options):
+        # 선택지 유효성 검증: 1 <= selected_option <= len(quiz.options)
+        if not (1 <= data['selected_option'] <= len(quiz.options)):
             raise serializers.ValidationError("Invalid option selected.")
         return data
 
@@ -40,6 +41,9 @@ class AnswerSerializer(serializers.Serializer):
 
         try:
             quiz = Quiz.objects.get(id=quiz_id)
-            return quiz.answer == user_answer
+            # 데이터베이스의 정답(0-based)을 1-based로 변환하여 비교
+            correct_answer = quiz.answer + 1
+            return correct_answer == user_answer
         except Quiz.DoesNotExist:
             raise serializers.ValidationError("Invalid quiz ID")
+
