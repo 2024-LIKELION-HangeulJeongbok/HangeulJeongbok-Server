@@ -47,6 +47,15 @@ INSTALLED_APPS = [
     'quiz',
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',  # TokenAuthentication 사용
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',  # 인증된 사용자만 접근 가능
+    ],
+}
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware', # 추가
     'django.middleware.security.SecurityMiddleware',
