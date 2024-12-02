@@ -20,6 +20,7 @@ from rest_framework import status
 from .models import Quiz, QuizHistory
 from .serializers import QuizSerializer, AnswerSerializer
 
+# 퀴즈 응시, 다음문제 이동, 점수계산, 결과 확인 기능 전부 포함
 class QuizListAPIView(APIView):
     permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 가능
 
@@ -106,22 +107,3 @@ class QuizAnswerAPIView(APIView):
             is_correct = serializer.check_answer()
             return Response({'result':'O' if is_correct else 'X'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# 결과 확인 API
-class QuizResultAPIView(APIView):
-    permission_classes = [IsAuthenticated]  # 인증된 사용자만 접근 가능
-    def get(self, request):
-        final_score = request.session.get('score', 0)
-        quiz_ids = request.session.get('quiz_ids', [])
-        wrong_answers = request.session.get('wrong_answers', [])
-
-        # 총 문제 수*문항당 점수 환산
-        total_score = len(quiz_ids)*5
-
-        wrong_quizzes = Quiz.objects.filter(id__in=wrong_answers)
-        serializer = QuizSerializer(wrong_quizzes, many=True)
-
-        return Response({
-            'result': f"{final_score}/{total_score}",
-            'wrong_answers': serializer.data
-        }, status=status.HTTP_200_OK)
