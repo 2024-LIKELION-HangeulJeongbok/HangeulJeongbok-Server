@@ -1,12 +1,18 @@
+import json
 from django.conf import settings  # settings에서 AUTH_USER_MODEL을 가져옵니다.
 from django.db import models
 
-# 퀴즈 내용 데이터베이스에 저장(문제, 선택지, 답안)
 class Quiz(models.Model):
     question = models.TextField()
-    options = models.JSONField(default=list)  # 선택지 저장
+    options = models.TextField()  # JSON 데이터를 문자열로 저장
     answer = models.IntegerField()
 
+    def set_options(self, data):
+        self.options = json.dumps(data)
+
+    def get_options(self):
+        return json.loads(self.options)
+    
     def __str__(self):
         return self.question
     
